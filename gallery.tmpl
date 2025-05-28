@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{if .RelativePath}}{{.RelativePath}} - {{end}}gifs.dropbox.dzombak.com</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+      scroll-timeline: --page-scroll block;
+    }
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      color-scheme: light dark;
+      padding-top: 64px; /* Add padding to account for fixed search UI */
+    }
+    h2 {
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+      padding-left: 1em;
+      color: #333;
+      grid-column: 1 / -1;
+    }
+    h2:first-child {
+      margin-top: 0;
+    }
+    h2 a {
+      color: inherit;
+      text-decoration: none;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 4px;
+      position: relative;
+      top: -1px;
+    }
+    h2 a:hover {
+      text-decoration: underline;
+    }
+    h2 a svg {
+      opacity: 0.5;
+      transition: opacity 0.05s ease;
+    }
+    h2 a:hover svg {
+      opacity: 1.0;
+    }
+    .masonry {
+      padding: 1em;
+      padding-right: 90px;
+      column-count: 4;
+      column-gap: 1em;
+      column-fill: balance;
+    }
+    .item {
+      break-inside: avoid;
+      margin-bottom: 1em;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: inline-block;
+      width: 100%;
+      box-sizing: border-box;
+      border: 2px solid transparent;
+      transition: border-color 0.05s ease;
+    }
+    .item a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      padding: 0.75em;
+    }
+    .item:hover {
+      border-color: #90caf9;
+    }
+    .item a:hover {
+      text-decoration: none;
+    }
+    .item img {
+      border-radius: 2px;
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+    }
+    .item .filename {
+      text-align: center;
+      font-size: 1em;
+      font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+      color: #666;
+      margin-top: 0.75em;
+    }
+    .subdirs {
+      background: #fff;
+      margin: 1em;
+      padding: 0.75em 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      min-height: 36px; /* Reduced from 48px */
+    }
+    .subdirs h3 {
+      margin: 0;
+      color: #666;
+      font-size: 0.9em;
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      padding-left: 0.5em;
+      min-width: 24px;
+    }
+    .subdirs h3 svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.7;
+    }
+    .subdirs ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+    }
+    .subdirs li {
+      background: #f4f4f4;
+      padding: 0.5em 1em;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      transition: all 0.05s ease;
+    }
+    .subdirs li.highlight {
+      border-color: #90caf9;
+      background: #e3f2fd;
+    }
+    .subdirs a {
+      color: #333;
+      text-decoration: none;
+      display: block;
+    }
+    .subdirs a:hover {
+      text-decoration: underline;
+    }
+    .subdirs li:hover {
+      background: #e4e4e4;
+    }
+    .breadcrumbs {
+      background: #fff;
+      margin: 1em;
+      padding: 0.75em 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      min-height: 36px; /* Reduced from 48px */
+      display: flex;
+      align-items: center;
+    }
+    .breadcrumbs a {
+      color: #333;
+      text-decoration: underline;
+    }
+    .breadcrumbs a:hover {
+      text-decoration: none;
+    }
+    .breadcrumbs .separator {
+      margin: 0 0.5em;
+      color: #666;
+    }
+    .breadcrumbs .link-icon {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.75em;
+      margin-left: 2px;
+      opacity: 0.5;
+      width: 20px;
+      height: 20px;
+    }
+    .letter-nav {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 100;
+      max-height: 80vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+      border: 2px solid #90caf9;
+    }
+    .letter-nav::-webkit-scrollbar {
+      width: 6px;
+    }
+    .letter-nav::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    .letter-nav::-webkit-scrollbar-thumb {
+      background: #90caf9;
+      border-radius: 3px;
+    }
+    .letter-nav::-webkit-scrollbar-thumb:hover {
+      background: #1976d2;
+    }
+    .letter-nav a {
+      color: #1976d2;
+      text-decoration: none;
+      font-size: 1em;
+      font-weight: bold;
+      padding: 12px 8px;
+      margin: -6px 0;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      min-width: 24px;
+      text-align: center;
+    }
+    .letter-nav a:hover {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    .letter-nav a.active {
+      background: #e3f2fd;
+      color: #1976d2;
+      font-weight: bold;
+    }
+    @media (max-width: 900px) {
+      .masonry {
+        column-count: 2;
+        padding-right: 1em;
+        column-gap: 0.5em;
+        padding: 0.5em;
+      }
+      .item {
+        margin-bottom: 0.5em;
+      }
+      .item a {
+        padding: 0.5em;
+      }
+      .item .filename {
+        margin-top: 0.5em;
+        font-size: 0.9em;
+      }
+      .letter-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        transform: none;
+        background: white;
+        padding: 16px;
+        border-radius: 0;
+        box-shadow: 0 -2px 12px rgba(0,0,0,0.15);
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+        border: 2px solid #90caf9;
+        border-bottom: none;
+      }
+      .letter-nav::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+      }
+      .letter-nav a {
+        white-space: nowrap;
+        padding: 12px 16px;
+        background: #e3f2fd;
+        margin-right: 8px;
+        font-size: 1.1em;
+        min-width: 40px;
+        color: #1976d2;
+      }
+      .letter-nav a:last-child {
+        margin-right: 0;
+      }
+      .letter-nav a:hover {
+        background: #bbdefb;
+      }
+      .letter-nav a.active {
+        background: #bbdefb;
+        color: #1976d2;
+        font-weight: bold;
+      }
+      body {
+        padding-bottom: 74px; /* Increased padding to account for taller nav */
+      }
+    }
+    @media (max-width: 600px) {
+      .masonry {
+        column-count: 2;
+        padding: 0.25em;
+        column-gap: 0.25em;
+      }
+      .item {
+        margin-bottom: 0.25em;
+      }
+      .item a {
+        padding: 0.25em;
+      }
+      .item .filename {
+        margin-top: 0.25em;
+        font-size: 0.85em;
+      }
+      .reset-button span,
+      .jump-to-top span {
+        display: none;
+      }
+      .reset-button,
+      .jump-to-top {
+        padding: 0.5em;
+      }
+    }
+    .filter-container {
+      background: #fff;
+      margin: 0;
+      padding: 1em;
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      border-bottom: 1px solid #ddd;
+    }
+    .filter-input {
+      flex: 1;
+      padding: 0.5em;
+      font-size: 1em;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .filter-input:focus {
+      outline: none;
+      border-color: #999;
+    }
+    .reset-button {
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      color: #666;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      transition: all 0.05s ease;
+    }
+    .reset-button.highlight {
+      border-color: #90caf9;
+      border-width: 2px;
+    }
+    .reset-button:hover {
+      background: #e3f2fd;
+      border-color: #90caf9;
+      color: #1976d2;
+    }
+    .reset-button svg {
+      width: 16px;
+      height: 16px;
+    }
+    .item.hidden {
+      display: none;
+    }
+    .jump-to-top {
+      position: relative;
+      right: 0;
+      top: 0;
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      color: #666;
+      font-size: 1em;
+    }
+    .jump-to-top:hover {
+      background: #e3f2fd;
+      border-color: #90caf9;
+      color: #1976d2;
+      transform: none;
+      box-shadow: none;
+    }
+    .jump-to-top svg {
+      width: 16px;
+      height: 16px;
+    }
+    .empty-state {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #666;
+      padding: 2em;
+    }
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1em;
+      opacity: 0.5;
+    }
+    .empty-state p {
+      margin: 0;
+      font-size: 1.1em;
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #121212;
+        color: #e0e0e0;
+      }
+      h2 {
+        color: #e0e0e0;
+      }
+      .item {
+        background: #1e1e1e;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      .item:hover {
+        border-color: #5a9bd6;
+      }
+      .item .filename {
+        color: #b0b0b0;
+      }
+      .subdirs {
+        background: #1e1e1e;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      .subdirs h3 {
+        color: #b0b0b0;
+      }
+      .subdirs h3 svg {
+        opacity: 0.9;
+      }
+      .subdirs li {
+        background: #2a2a2a;
+      }
+      .subdirs li:hover {
+        background: #333333;
+      }
+      .subdirs li.highlight {
+        border-color: #4a6b8a;
+        background: #1e3a5f;
+      }
+      .subdirs a {
+        color: #e0e0e0;
+      }
+      .breadcrumbs {
+        background: #1e1e1e;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      .breadcrumbs a {
+        color: #e0e0e0;
+      }
+      .breadcrumbs .separator {
+        color: #b0b0b0;
+      }
+      .breadcrumbs .link-icon {
+        opacity: 0.7;
+      }
+      .letter-nav {
+        background: #1e1e1e;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        border-color: #5a9bd6;
+      }
+      .letter-nav::-webkit-scrollbar-track {
+        background: #2a2a2a;
+      }
+      .letter-nav::-webkit-scrollbar-thumb {
+        background: #5a9bd6;
+      }
+      .letter-nav::-webkit-scrollbar-thumb:hover {
+        background: #4a8bc6;
+      }
+      .letter-nav a {
+        color: #5a9bd6;
+      }
+      .letter-nav a:hover {
+        background: #1e3a5f;
+        color: #5a9bd6;
+      }
+      .letter-nav a.active {
+        background: #1e3a5f;
+        color: #5a9bd6;
+      }
+      .filter-container {
+        background: #1e1e1e;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        border-bottom: 1px solid #333333;
+      }
+      .filter-input {
+        background: #2a2a2a;
+        border-color: #333333;
+        color: #e0e0e0;
+      }
+      .filter-input:focus {
+        border-color: #5a9bd6;
+      }
+      .reset-button {
+        background: #2a2a2a;
+        border-color: #333333;
+        color: #b0b0b0;
+        transition: all 0.05s ease;
+      }
+      .reset-button.highlight {
+        border-color: #4a6b8a;
+      }
+      .reset-button:hover {
+        background: #1e3a5f;
+        border-color: #5a9bd6;
+        color: #5a9bd6;
+      }
+      .jump-to-top {
+        background: #2a2a2a;
+        border-color: #333333;
+        color: #b0b0b0;
+      }
+      .jump-to-top:hover {
+        background: #1e3a5f;
+        border-color: #5a9bd6;
+        color: #5a9bd6;
+      }
+      .empty-state {
+        color: #b0b0b0;
+      }
+      .empty-state svg {
+        opacity: 0.7;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="filter-container">
+    <input type="text" class="filter-input" placeholder="Type to search…" id="filterInput">
+    <button class="reset-button" id="resetButton" title="Clear search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+      <span>Clear</span>
+    </button>
+    <button class="jump-to-top" id="jumpToTop" title="Jump to top">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19V5M5 12l7-7 7 7"/>
+      </svg>
+      <span>Top</span>
+    </button>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <p>No images found</p>
+  </div>
+
+  {{if .RelativePath}}
+  <div class="breadcrumbs">
+  <a href="/index.html"><svg class="link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>index</a>
+    {{$parts := split .RelativePath "/"}}
+    {{range $i, $part := $parts}}
+      <span class="separator">/</span>
+      {{if eq (add $i 1) (len $parts)}}
+        <span>{{$part}}</span>
+      {{else}}
+        <a href="{{range $j := until $i}}../{{end}}index.html">{{$part}}</a>
+      {{end}}
+    {{end}}
+  </div>
+  {{end}}
+
+  {{if .Subdirs}}
+  <div class="subdirs">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      </svg>
+    </h3>
+    <ul>
+      {{range .Subdirs}}
+      <a href="{{.RelativePath}}/index.html"><li>{{.RelativePath}}</li></a>
+      {{end}}
+    </ul>
+  </div>
+  {{end}}
+
+  {{if .ImageGroups}}
+    {{if gt (len .ImageGroups) 4}}
+    <div class="letter-nav">
+      {{range .ImageGroups}}
+        <a href="#{{.Letter}}">{{.Letter}}</a>
+      {{end}}
+    </div>
+    {{end}}
+  {{end}}
+
+  {{range .ImageGroups}}
+    <h2 id="{{.Letter}}">{{.Letter}} <a href="#{{.Letter}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+    <div class="masonry">
+      {{range .Files}}
+        <div class="item">
+          <a href="{{.}}">
+            <img src="{{.}}" alt="{{.}}">
+            <div class="filename">{{.}}</div>
+          </a>
+        </div>
+      {{end}}
+    </div>
+  {{end}}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const filterInput = document.getElementById('filterInput');
+      const resetButton = document.getElementById('resetButton');
+      const items = document.querySelectorAll('.item');
+      const sections = document.querySelectorAll('.masonry');
+      const letterNav = document.querySelector('.letter-nav');
+      const subdirsSection = document.querySelector('.subdirs');
+
+      // Generate a version based on the current file list
+      function generateVersion() {
+        const filenames = Array.from(items).map(item =>
+          item.querySelector('.filename').textContent
+        ).sort();
+        return filenames.join('|');
+      }
+
+      // Cache for search results
+      let searchIndex = new Map();
+      const STORAGE_KEY = 'gallerySearchIndex';
+      const VERSION_KEY = 'gallerySearchIndexVersion';
+
+      function getFilenameKeywords(filename) {
+        // Use a Set to store unique keywords
+        const keywords = new Set();
+
+        // Split filename by - and _ and convert to lowercase
+        const parts = filename.toLowerCase()
+          .split(/[-_]/)
+          .map(part => part.trim())
+          .filter(part => part.length > 0);
+
+        // Add individual parts
+        parts.forEach(part => keywords.add(part));
+
+        // Add the full filename
+        keywords.add(filename.toLowerCase());
+
+        // Add concatenated versions of adjacent parts
+        for (let i = 0; i < parts.length - 1; i++) {
+          keywords.add(parts[i] + parts[i + 1]);
+        }
+
+        return Array.from(keywords);
+      }
+
+      function getSearchTerms(text) {
+        // Split by spaces for OR queries
+        return text.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+      }
+
+      function matchesSearch(filename, searchTerms) {
+        // Get cached keywords or compute and cache them
+        let keywords = searchIndex.get(filename);
+        if (!keywords) {
+          keywords = getFilenameKeywords(filename);
+          searchIndex.set(filename, keywords);
+        }
+
+        // For each search term, check if ANY of the filename keywords match
+        return searchTerms.some(searchTerm =>
+          keywords.some(keyword => keyword.includes(searchTerm))
+        );
+      }
+
+      function updateSearchResults(searchTerms) {
+        let visibleHeaderCount = 0;
+        let hasVisibleItems = false;
+        let hasVisibleImages = false;
+
+        // Filter subdirectories if they exist
+        if (subdirsSection) {
+          const subdirLinks = subdirsSection.querySelectorAll('a');
+          let hasVisibleSubdirs = false;
+
+          subdirLinks.forEach(link => {
+            const subdirName = link.querySelector('li').textContent;
+            if (searchTerms.length === 0 || matchesSearch(subdirName, searchTerms)) {
+              link.style.display = '';
+              hasVisibleSubdirs = true;
+            } else {
+              link.style.display = 'none';
+            }
+          });
+
+          // Show/hide the entire subdirs section based on matches
+          subdirsSection.style.display = hasVisibleSubdirs ? '' : 'none';
+          if (hasVisibleSubdirs) hasVisibleItems = true;
+        }
+
+        // Track if any items are visible in each section
+        sections.forEach((section, index) => {
+          const sectionItems = section.querySelectorAll('.item');
+          let hasVisibleItemsInSection = false;
+
+          sectionItems.forEach(item => {
+            const filename = item.querySelector('.filename').textContent;
+
+            if (searchTerms.length === 0 || matchesSearch(filename, searchTerms)) {
+              item.classList.remove('hidden');
+              hasVisibleItemsInSection = true;
+              hasVisibleItems = true;
+              hasVisibleImages = true;
+            } else {
+              item.classList.add('hidden');
+            }
+          });
+
+          // Get the corresponding header (h2) and its container
+          const header = document.querySelectorAll('h2')[index];
+          if (header) {
+            // Find the container that holds both the header and the masonry section
+            const sectionContainer = header.nextElementSibling;
+
+            if (hasVisibleItemsInSection) {
+              header.style.display = '';
+              if (sectionContainer) sectionContainer.style.display = '';
+              visibleHeaderCount++;
+            } else {
+              header.style.display = 'none';
+              if (sectionContainer) sectionContainer.style.display = 'none';
+            }
+          }
+
+          // Update letter navigation
+          if (letterNav) {
+            const letterLink = letterNav.querySelector(`a[href="#${header.id}"]`);
+            if (letterLink) {
+              if (hasVisibleItemsInSection) {
+                letterLink.style.display = '';
+              } else {
+                letterLink.style.display = 'none';
+              }
+            }
+          }
+        });
+
+        // Show/hide letter navigation based on visible header count
+        if (letterNav) {
+          if (visibleHeaderCount >= 4) {
+            letterNav.style.display = '';
+          } else {
+            letterNav.style.display = 'none';
+          }
+        }
+
+        // Show/hide empty state - show if no images match, even if subdirectories do
+        const emptyState = document.getElementById('emptyState');
+        if (emptyState) {
+          emptyState.style.display = hasVisibleImages ? 'none' : 'block';
+        }
+
+        // Highlight matching subdirectories if no images match
+        if (subdirsSection && !hasVisibleImages && searchTerms.length > 0) {
+          const subdirLinks = subdirsSection.querySelectorAll('a');
+          subdirLinks.forEach(link => {
+            const subdirName = link.querySelector('li').textContent;
+            if (matchesSearch(subdirName, searchTerms)) {
+              link.querySelector('li').classList.add('highlight');
+            } else {
+              link.querySelector('li').classList.remove('highlight');
+            }
+          });
+        } else if (subdirsSection) {
+          // Remove highlights if images match or no search
+          const subdirLinks = subdirsSection.querySelectorAll('a');
+          subdirLinks.forEach(link => {
+            link.querySelector('li').classList.remove('highlight');
+          });
+        }
+
+        // Highlight Clear button if no results found
+        if (searchTerms.length > 0 && !hasVisibleImages) {
+          resetButton.classList.add('highlight');
+        } else {
+          resetButton.classList.remove('highlight');
+        }
+      }
+
+      function updateURL(searchTerm) {
+        const url = new URL(window.location);
+        if (searchTerm) {
+          url.searchParams.set('q', searchTerm);
+        } else {
+          url.searchParams.delete('q');
+        }
+        window.history.replaceState({}, '', url);
+      }
+
+      filterInput.addEventListener('input', function() {
+        const searchTerms = getSearchTerms(this.value);
+        updateSearchResults(searchTerms);
+        updateURL(this.value);
+      });
+
+      function resetSearch() {
+        filterInput.value = '';
+        updateSearchResults([]);
+        updateURL('');
+      }
+
+      resetButton.addEventListener('click', resetSearch);
+
+      // Try to load cached index from localStorage
+      const currentVersion = generateVersion();
+      const storedVersion = localStorage.getItem(VERSION_KEY);
+      const storedIndex = localStorage.getItem(STORAGE_KEY);
+
+      if (storedVersion === currentVersion && storedIndex) {
+        try {
+          // Convert stored array back to Map
+          const parsedIndex = JSON.parse(storedIndex);
+          searchIndex = new Map(Object.entries(parsedIndex));
+          console.log('Loaded search index from cache');
+        } catch (e) {
+          console.warn('Failed to parse cached search index, regenerating');
+          searchIndex = new Map();
+        }
+      } else {
+        console.log('Regenerating search index');
+        // Pre-compute search index for all items
+        items.forEach(item => {
+          const filename = item.querySelector('.filename').textContent;
+          if (!searchIndex.has(filename)) {
+            searchIndex.set(filename, getFilenameKeywords(filename));
+          }
+        });
+
+        // Store in localStorage
+        try {
+          // Convert Map to object for storage
+          const indexObject = Object.fromEntries(searchIndex);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(indexObject));
+          localStorage.setItem(VERSION_KEY, currentVersion);
+        } catch (e) {
+          console.warn('Failed to store search index in localStorage:', e);
+        }
+      }
+
+      // Handle initial search from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialSearch = urlParams.get('q');
+      if (initialSearch) {
+        filterInput.value = initialSearch;
+        updateSearchResults(getSearchTerms(initialSearch));
+        // Move cursor to end of input
+        const len = initialSearch.length;
+        filterInput.setSelectionRange(len, len);
+      }
+
+      // Focus the search input
+      filterInput.focus();
+
+      // Handle Cmd+F/Ctrl+F to focus search and scroll to top
+      document.addEventListener('keydown', function(e) {
+        // Check for Cmd+F (Mac) or Ctrl+F (Windows/Linux)
+        if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+          e.preventDefault(); // Prevent browser's find dialog
+          filterInput.focus();
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+      });
+
+      // Handle initial hash navigation
+      function handleInitialHash() {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+          const targetSection = document.getElementById(hash);
+          if (targetSection) {
+            // Wait a moment for any search filtering to complete
+            setTimeout(() => {
+              targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              // Update active letter after scroll completes
+              setTimeout(updateActiveLetter, 300);
+            }, 100);
+          }
+        }
+      }
+
+      // Call after page load and any initial search filtering
+      handleInitialHash();
+
+      // Jump to top functionality
+      const jumpToTop = document.getElementById('jumpToTop');
+
+      jumpToTop.addEventListener('click', function() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+        // Remove hash from URL without triggering a page reload
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+      });
+
+      // Update active letter in navigation
+      function updateActiveLetter() {
+        const sections = document.querySelectorAll('h2[id]');
+        const letterLinks = document.querySelectorAll('.letter-nav a');
+
+        // Find the current section in view
+        let currentSection = null;
+        const viewportTop = window.scrollY;
+        const viewportBottom = viewportTop + window.innerHeight;
+        const headerOffset = 20; // Small offset to account for header height
+
+        // First check if we're near the bottom of the page
+        const isNearBottom = (document.documentElement.scrollHeight - window.scrollY - window.innerHeight) < 100;
+
+        if (isNearBottom) {
+          // If near bottom, find the last visible section
+          for (let i = sections.length - 1; i >= 0; i--) {
+            const section = sections[i];
+            const sectionContainer = section.nextElementSibling;
+            if (!sectionContainer) continue;
+
+            const sectionTop = section.offsetTop;
+            if (sectionTop <= viewportBottom) {
+              currentSection = section;
+              break;
+            }
+          }
+        } else {
+          // Find the section that's currently at the top of the viewport
+          for (const section of sections) {
+            const sectionContainer = section.nextElementSibling;
+            if (!sectionContainer) continue;
+
+            const sectionTop = section.offsetTop;
+            const nextSection = section.nextElementSibling?.nextElementSibling;
+
+            if (nextSection) {
+              const nextSectionTop = nextSection.offsetTop;
+              // Add headerOffset to viewportTop to ensure we're past the header
+              if (sectionTop <= viewportTop + headerOffset && nextSectionTop > viewportTop + headerOffset) {
+                currentSection = section;
+                break;
+              }
+            } else if (sectionTop <= viewportTop + headerOffset) {
+              currentSection = section;
+              break;
+            }
+          }
+        }
+
+        // Update active state of letter links
+        letterLinks.forEach(link => {
+          const letter = link.getAttribute('href').substring(1);
+          if (currentSection && currentSection.id === letter) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+      }
+
+      // Add click handlers to letter navigation links
+      if (letterNav) {
+        letterNav.addEventListener('click', function(e) {
+          if (e.target.tagName === 'A') {
+            const letter = e.target.getAttribute('href').substring(1);
+            // Immediately update active state for the clicked letter
+            letterLinks.forEach(link => {
+              if (link.getAttribute('href').substring(1) === letter) {
+                link.classList.add('active');
+              } else {
+                link.classList.remove('active');
+              }
+            });
+          }
+        });
+      }
+
+      // Update active letter when scrolling ends
+      window.addEventListener('scrollend', updateActiveLetter);
+
+      // Initial update
+      updateActiveLetter();
+    });
+  </script>
+</body>
+</html>
