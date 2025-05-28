@@ -1,3 +1,7 @@
-module github.com/cdzombak/gallerygen
+module gallerygen
 
-go 1.24.2
+go 1.21
+
+require github.com/fsnotify/fsnotify v1.7.0
+
+require golang.org/x/sys v0.4.0 // indirect

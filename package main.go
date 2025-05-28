@@ -4,10 +4,16 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
+	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 var imageExtensions = map[string]bool{
@@ -104,6 +110,8 @@ func generateHTML(dir Directory, tmpl *template.Template) error {
 		return fmt.Errorf("error writing HTML to %s: %v", outputPath, err)
 	}
 
+	log.Printf("Generated index.html in directory: %s", dir.Path)
+
 	// Recursively generate index.html for all subdirectories
 	for _, subdir := range dir.Subdirs {
 		err := generateHTML(subdir, tmpl)
@@ -115,15 +123,89 @@ func generateHTML(dir Directory, tmpl *template.Template) error {
 	return nil
 }
 
+func watchDirectory(dirPath string, tmpl *template.Template) error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("error creating watcher: %v", err)
+	}
+	defer watcher.Close()
+
+	// Set up signal handling
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Channel to debounce file system events
+	debounceChan := make(chan struct{}, 1)
+	debounceTimer := time.NewTimer(0)
+	<-debounceTimer.C // Drain the initial tick
+
+	// Start watching the directory and all subdirectories
+	err = filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			if err := watcher.Add(path); err != nil {
+				log.Printf("Warning: Could not watch directory %s: %v", path, err)
+			} else {
+				log.Printf("Now watching directory: %s", path)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("error setting up directory watch: %v", err)
+	}
+
+	log.Printf("Started watching directory tree at: %s", dirPath)
+
+	for {
+		select {
+		case event := <-watcher.Events:
+			// Ignore events for index.html files to prevent infinite loops
+			if filepath.Base(event.Name) == "index.html" {
+				continue
+			}
+
+			log.Printf("File system event detected: %s on %s", event.Op, event.Name)
+
+			// Debounce the event
+			select {
+			case debounceChan <- struct{}{}:
+				debounceTimer.Reset(500 * time.Millisecond)
+			default:
+				// Event already queued
+			}
+
+		case err := <-watcher.Errors:
+			log.Printf("Watcher error in directory %s: %v", dirPath, err)
+
+		case <-debounceTimer.C:
+			<-debounceChan // Clear the debounce channel
+			log.Printf("Regenerating gallery for directory: %s", dirPath)
+
+			dir, err := processDirectory(dirPath, dirPath)
+			if err != nil {
+				log.Printf("Error processing directory %s: %v", dirPath, err)
+				continue
+			}
+
+			if err := generateHTML(dir, tmpl); err != nil {
+				log.Printf("Error generating HTML in directory %s: %v", dirPath, err)
+			} else {
+				log.Printf("Gallery regenerated successfully in directory: %s", dirPath)
+			}
+
+		case sig := <-sigChan:
+			log.Printf("Received signal %v, shutting down watcher for directory: %s", sig, dirPath)
+			return nil
+		}
+	}
+}
+
 func main() {
 	dirPath := flag.String("dir", ".", "Directory containing images to process")
 	flag.Parse()
-
-	dir, err := processDirectory(*dirPath, *dirPath)
-	if err != nil {
-		fmt.Println("Error processing directory:", err)
-		return
-	}
 
 	// Create template with custom functions
 	funcMap := template.FuncMap{
@@ -142,13 +224,23 @@ func main() {
 
 	tmpl, err := template.New("gallery.tmpl").Funcs(funcMap).ParseFiles("gallery.tmpl")
 	if err != nil {
-		fmt.Println("Error loading template:", err)
-		return
+		log.Fatalf("Error loading template file gallery.tmpl: %v", err)
 	}
 
-	err = generateHTML(dir, tmpl)
+	// Initial generation
+	dir, err := processDirectory(*dirPath, *dirPath)
 	if err != nil {
-		fmt.Println("Error generating HTML:", err)
-		return
+		log.Fatalf("Error processing directory %s: %v", *dirPath, err)
+	}
+
+	if err := generateHTML(dir, tmpl); err != nil {
+		log.Fatalf("Error generating initial HTML in directory %s: %v", *dirPath, err)
+	}
+
+	log.Printf("Initial gallery generation complete in directory: %s", *dirPath)
+
+	// Start watching for changes
+	if err := watchDirectory(*dirPath, tmpl); err != nil {
+		log.Fatalf("Error watching directory %s: %v", *dirPath, err)
 	}
 }
