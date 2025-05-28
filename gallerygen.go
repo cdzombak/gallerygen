@@ -39,6 +39,7 @@ type Directory struct {
 	Subdirs      []Directory
 	ImageGroups  []ImageGroup
 	RelativePath string
+	Version      string
 }
 
 func processDirectory(dirPath string, basePath string) (Directory, error) {
@@ -54,6 +55,7 @@ func processDirectory(dirPath string, basePath string) (Directory, error) {
 	dir := Directory{
 		Path:         dirPath,
 		RelativePath: relPath,
+		Version:      Version,
 	}
 
 	entries, err := os.ReadDir(dirPath)
