@@ -16,6 +16,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+var Version = "<dev>"
+
 var imageExtensions = map[string]bool{
 	".gif":  true,
 	".jpg":  true,
@@ -204,8 +206,20 @@ func watchDirectory(dirPath string, tmpl *template.Template) error {
 }
 
 func main() {
-	dirPath := flag.String("dir", ".", "Directory containing images to process")
+	dirPath := flag.String("dir", "", "Directory containing images to process. Required.")
+	showVersion := flag.Bool("version", false, "Print version and exit.")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("gallerygen version %s\n", Version)
+		return
+	}
+
+	if *dirPath == "" {
+		fmt.Fprintf(os.Stderr, "Error: -dir flag is required\n")
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	// Create template with custom functions
 	funcMap := template.FuncMap{
