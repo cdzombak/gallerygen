@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"html/template"
@@ -15,6 +16,9 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 )
+
+//go:embed gallery.tmpl
+var templateFS embed.FS
 
 var Version = "<dev>"
 
@@ -237,9 +241,14 @@ func main() {
 		},
 	}
 
-	tmpl, err := template.New("gallery.tmpl").Funcs(funcMap).ParseFiles("gallery.tmpl")
+	templateContent, err := templateFS.ReadFile("gallery.tmpl")
 	if err != nil {
-		log.Fatalf("Error loading template file gallery.tmpl: %v", err)
+		log.Fatalf("Error reading embedded template: %v", err)
+	}
+
+	tmpl, err := template.New("gallery.tmpl").Funcs(funcMap).Parse(string(templateContent))
+	if err != nil {
+		log.Fatalf("Error parsing template: %v", err)
 	}
 
 	// Initial generation
