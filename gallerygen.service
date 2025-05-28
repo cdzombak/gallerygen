@@ -14,7 +14,6 @@ StandardError=journal
 SyslogIdentifier=gallerygen
 NoNewPrivileges=yes
 ProtectSystem=full
-ProtectHome=yes
 PrivateTmp=yes
 CapabilityBoundingSet=
 
