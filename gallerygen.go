@@ -208,6 +208,7 @@ func watchDirectory(dirPath string, tmpl *template.Template) error {
 func main() {
 	dirPath := flag.String("dir", "", "Directory containing images to process. Required.")
 	showVersion := flag.Bool("version", false, "Print version and exit.")
+	oneshot := flag.Bool("oneshot", false, "Generate gallery once and exit, without watching for changes.")
 	flag.Parse()
 
 	if *showVersion {
@@ -251,7 +252,12 @@ func main() {
 		log.Fatalf("Error generating initial HTML in directory %s: %v", *dirPath, err)
 	}
 
-	log.Printf("Initial gallery generation complete in directory: %s", *dirPath)
+	log.Printf("Gallery generation complete in directory: %s", *dirPath)
+
+	// If oneshot mode, exit after initial generation
+	if *oneshot {
+		return
+	}
 
 	// Start watching for changes
 	if err := watchDirectory(*dirPath, tmpl); err != nil {
