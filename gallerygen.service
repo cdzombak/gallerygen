@@ -1,0 +1,22 @@
+[Unit]
+Description=GalleryGen Image Gallery Generator
+After=network.target
+
+[Service]
+Type=simple
+User=gallerygen
+Group=gallerygen
+ExecStart=/usr/local/bin/gallerygen -dir /srv/gallerygen/images
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gallerygen
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
