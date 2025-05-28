@@ -40,9 +40,10 @@ type Directory struct {
 	ImageGroups  []ImageGroup
 	RelativePath string
 	Version      string
+	Title        string
 }
 
-func processDirectory(dirPath string, basePath string) (Directory, error) {
+func processDirectory(dirPath string, basePath string, title string) (Directory, error) {
 	// Calculate relative path from basePath to dirPath
 	relPath, err := filepath.Rel(basePath, dirPath)
 	if err != nil {
@@ -56,6 +57,7 @@ func processDirectory(dirPath string, basePath string) (Directory, error) {
 		Path:         dirPath,
 		RelativePath: relPath,
 		Version:      Version,
+		Title:        title,
 	}
 
 	entries, err := os.ReadDir(dirPath)
@@ -68,7 +70,7 @@ func processDirectory(dirPath string, basePath string) (Directory, error) {
 
 	for _, entry := range entries {
 		if entry.IsDir() {
-			subdir, err := processDirectory(filepath.Join(dirPath, entry.Name()), basePath)
+			subdir, err := processDirectory(filepath.Join(dirPath, entry.Name()), basePath, title)
 			if err != nil {
 				return dir, err
 			}
@@ -131,7 +133,7 @@ func generateHTML(dir Directory, tmpl *template.Template) error {
 	return nil
 }
 
-func watchDirectory(dirPath string, tmpl *template.Template) error {
+func watchDirectory(dirPath string, tmpl *template.Template, title string) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("error creating watcher: %v", err)
@@ -192,7 +194,7 @@ func watchDirectory(dirPath string, tmpl *template.Template) error {
 			<-debounceChan // Clear the debounce channel
 			log.Printf("Regenerating gallery for directory: %s", dirPath)
 
-			dir, err := processDirectory(dirPath, dirPath)
+			dir, err := processDirectory(dirPath, dirPath, title)
 			if err != nil {
 				log.Printf("Error processing directory %s: %v", dirPath, err)
 				continue
@@ -215,6 +217,7 @@ func main() {
 	dirPath := flag.String("dir", "", "Directory containing images to process. Required.")
 	showVersion := flag.Bool("version", false, "Print version and exit.")
 	oneshot := flag.Bool("oneshot", false, "Generate gallery once and exit, without watching for changes.")
+	title := flag.String("title", "dropbox.dzombak.com/gifs", "Title to use for the gallery.")
 	flag.Parse()
 
 	if *showVersion {
@@ -254,7 +257,7 @@ func main() {
 	}
 
 	// Initial generation
-	dir, err := processDirectory(*dirPath, *dirPath)
+	dir, err := processDirectory(*dirPath, *dirPath, *title)
 	if err != nil {
 		log.Fatalf("Error processing directory %s: %v", *dirPath, err)
 	}
@@ -271,7 +274,7 @@ func main() {
 	}
 
 	// Start watching for changes
-	if err := watchDirectory(*dirPath, tmpl); err != nil {
+	if err := watchDirectory(*dirPath, tmpl, *title); err != nil {
 		log.Fatalf("Error watching directory %s: %v", *dirPath, err)
 	}
 }
