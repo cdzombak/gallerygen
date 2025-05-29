@@ -2,9 +2,14 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html/template"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"os"
 	"os/signal"
@@ -30,10 +35,17 @@ var imageExtensions = map[string]bool{
 	".png":  true,
 }
 
+// ImageMetadata contains information about an image file
+type ImageMetadata struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
+}
+
 // ImageGroup represents a group of images that start with the same letter.
 type ImageGroup struct {
-	Letter string
-	Files  []string
+	Letter   string
+	Files    []string
+	Metadata map[string]ImageMetadata
 }
 
 // Directory represents a directory in the gallery, containing subdirectories and image groups.
@@ -50,6 +62,45 @@ type Directory struct {
 func isHiddenOrTemp(filename string) bool {
 	base := filepath.Base(filename)
 	return strings.HasPrefix(base, ".") || strings.HasSuffix(base, ".tmp") || strings.HasSuffix(base, ".temp")
+}
+
+// getImageMetadata returns the dimensions of an image file, using cache if available
+func getImageMetadata(imagePath string) (ImageMetadata, error) {
+	// Check for cache file
+	baseName := filepath.Base(imagePath)
+	dirName := filepath.Dir(imagePath)
+	cachePath := filepath.Join(dirName, "."+baseName+".gallerygen.json")
+	if cacheData, err := os.ReadFile(cachePath); err == nil {
+		var metadata ImageMetadata
+		if err := json.Unmarshal(cacheData, &metadata); err == nil {
+			return metadata, nil
+		}
+	}
+
+	// If no cache or invalid cache, read the image
+	file, err := os.Open(imagePath)
+	if err != nil {
+		return ImageMetadata{}, fmt.Errorf("error opening image file: %v", err)
+	}
+	defer file.Close()
+
+	img, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return ImageMetadata{}, fmt.Errorf("error decoding image: %v", err)
+	}
+
+	metadata := ImageMetadata{
+		Width:  img.Width,
+		Height: img.Height,
+	}
+
+	// Cache the metadata
+	cacheData, err := json.Marshal(metadata)
+	if err == nil {
+		os.WriteFile(cachePath, cacheData, 0644)
+	}
+
+	return metadata, nil
 }
 
 func processDirectory(dirPath string, basePath string, title string) (Directory, error) {
@@ -75,6 +126,7 @@ func processDirectory(dirPath string, basePath string, title string) (Directory,
 	}
 
 	groups := make(map[string][]string)
+	metadata := make(map[string]map[string]ImageMetadata)
 	var subdirs []Directory
 
 	for _, entry := range entries {
@@ -100,8 +152,22 @@ func processDirectory(dirPath string, basePath string, title string) (Directory,
 		if !imageExtensions[ext] {
 			continue
 		}
+
 		first := strings.ToUpper(string(entry.Name()[0]))
 		groups[first] = append(groups[first], entry.Name())
+
+		// Get image metadata
+		imgPath := filepath.Join(dirPath, entry.Name())
+		imgMetadata, err := getImageMetadata(imgPath)
+		if err != nil {
+			log.Printf("Warning: Could not get metadata for %s: %v", imgPath, err)
+			continue
+		}
+
+		if metadata[first] == nil {
+			metadata[first] = make(map[string]ImageMetadata)
+		}
+		metadata[first][entry.Name()] = imgMetadata
 	}
 
 	// Sort group keys
@@ -116,7 +182,11 @@ func processDirectory(dirPath string, basePath string, title string) (Directory,
 	for _, letter := range letters {
 		files := groups[letter]
 		sort.Strings(files)
-		imageGroups = append(imageGroups, ImageGroup{Letter: letter, Files: files})
+		imageGroups = append(imageGroups, ImageGroup{
+			Letter:   letter,
+			Files:    files,
+			Metadata: metadata[letter],
+		})
 	}
 
 	dir.ImageGroups = imageGroups
