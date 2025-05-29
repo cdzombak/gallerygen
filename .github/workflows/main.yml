@@ -1,6 +1,17 @@
 ---
 name: CI
 
+# Required Secrets:
+# - DOCKERHUB_USERNAME: Docker Hub username
+# - DOCKERHUB_TOKEN: Docker Hub access token
+# - GITHUB_TOKEN: Automatically provided by GitHub Actions
+# - HOMEBREW_RELEASER_PAT: GitHub Personal Access Token with repo scope for Homebrew formula updates
+# - NTFY_TOKEN: Bearer token for ntfy.cdzombak.net notifications
+# - APTLY_CRED: Credentials for Aptly repository (format: username:password)
+# - APTLY_API: URL for Aptly API endpoint
+# - TS_OAUTH_CLIENT_ID: Tailscale OAuth client ID for GitHub Actions
+# - TS_OAUTH_SECRET: Tailscale OAuth secret for GitHub Actions
+
 "on":
   push:
     branches:
