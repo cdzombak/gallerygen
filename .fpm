@@ -1,0 +1,6 @@
+-s dir
+--name gallerygen
+--description "Generate a static HTML gallery from a directory of images"
+--url "https://github.com/cdzombak/gallerygen"
+--maintainer "Chris Dzombak <https://www.dzombak.com>"
+--license LGPL3
