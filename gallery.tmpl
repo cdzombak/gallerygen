@@ -717,8 +717,8 @@
       {{range $file := $group.Files}}
       <div class="item">
         <a href="{{$file}}" target="_blank">
-          <div class="preview" data-blurhash="{{(index $group.Metadata $file).Blurhash}}" style="padding-bottom: {{mul (div (float64 (index $group.Metadata $file).Height) (float64 (index $group.Metadata $file).Width)) 100}}%">
-            <img src="{{$file}}" alt="{{$file}}" width="{{(index $group.Metadata $file).Width}}" height="{{(index $group.Metadata $file).Height}}" loading="lazy" class="loaded" onload="this.classList.add('visible')">
+          <div class="preview" data-blurhash="{{(index $group.Metadata $file).Blurhash}}" style="padding-bottom: min(200%, {{mul (div (float64 (index $group.Metadata $file).Height) (float64 (index $group.Metadata $file).Width)) 100}}%); overflow: hidden;">
+            <img src="{{$file}}" alt="{{$file}}" width="{{(index $group.Metadata $file).Width}}" height="{{(index $group.Metadata $file).Height}}" loading="lazy" class="loaded" onload="this.classList.add('visible')" style="object-fit: cover; height: 100%;">
           </div>
           <div class="filename">{{$file}}</div>
         </a>
