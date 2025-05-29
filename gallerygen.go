@@ -46,6 +46,12 @@ type Directory struct {
 	Title        string
 }
 
+// isHiddenOrTemp returns true if the file should be ignored (hidden or temporary)
+func isHiddenOrTemp(filename string) bool {
+	base := filepath.Base(filename)
+	return strings.HasPrefix(base, ".") || strings.HasSuffix(base, ".tmp") || strings.HasSuffix(base, ".temp")
+}
+
 func processDirectory(dirPath string, basePath string, title string) (Directory, error) {
 	// Calculate relative path from basePath to dirPath
 	relPath, err := filepath.Rel(basePath, dirPath)
@@ -73,11 +79,20 @@ func processDirectory(dirPath string, basePath string, title string) (Directory,
 
 	for _, entry := range entries {
 		if entry.IsDir() {
+			// Skip hidden directories
+			if strings.HasPrefix(entry.Name(), ".") {
+				continue
+			}
 			subdir, err := processDirectory(filepath.Join(dirPath, entry.Name()), basePath, title)
 			if err != nil {
 				return dir, err
 			}
 			subdirs = append(subdirs, subdir)
+			continue
+		}
+
+		// Skip hidden or temporary files
+		if isHiddenOrTemp(entry.Name()) {
 			continue
 		}
 
@@ -158,6 +173,10 @@ func watchDirectory(dirPath string, tmpl *template.Template, title string) error
 			return err
 		}
 		if info.IsDir() {
+			// Skip hidden directories
+			if strings.HasPrefix(info.Name(), ".") {
+				return filepath.SkipDir
+			}
 			if err := watcher.Add(path); err != nil {
 				log.Printf("Warning: Could not watch directory %s: %v", path, err)
 			} else {
@@ -175,8 +194,8 @@ func watchDirectory(dirPath string, tmpl *template.Template, title string) error
 	for {
 		select {
 		case event := <-watcher.Events:
-			// Ignore events for index.html files to prevent infinite loops
-			if filepath.Base(event.Name) == "index.html" {
+			// Ignore events for index.html files and hidden/temp files
+			if filepath.Base(event.Name) == "index.html" || isHiddenOrTemp(event.Name) {
 				continue
 			}
 
