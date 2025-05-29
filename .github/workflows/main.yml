@@ -215,7 +215,7 @@ jobs:
           cp ./*.deb ./gh-release/
           find . -name '${{ needs.meta.outputs.bin_name }}-*' -executable -type f -maxdepth 1 -print0 | xargs -0 -I {} tar --transform='flags=r;s|.*|${{ needs.meta.outputs.bin_name }}|' -czvf ./gh-release/{}.tar.gz {}
       - name: Upload binaries & packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ needs.meta.outputs.bin_name }} Binary Artifacts
           path: out/gh-release/*
@@ -231,7 +231,7 @@ jobs:
       contents: write
     steps:
       - name: Download binaries & packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ needs.meta.outputs.bin_name }} Binary Artifacts
           path: out
@@ -339,7 +339,7 @@ jobs:
     needs: [meta, docker, binaries, release, aptly, homebrew]
     steps:
       - name: Send success notification
-        uses: niniyas/ntfy-action@master
+        uses: niniyas/ntfy-action@9c6dc60073292f562769f83df2ace9f64ab31c78
         if: ${{ !contains(needs.*.result, 'failure') && (needs.meta.outputs.is_release == 'true' || needs.meta.outputs.is_prerelease == 'true') }}
         with:
           url: "https://ntfy.cdzombak.net"
@@ -350,7 +350,7 @@ jobs:
           title: ${{ github.event.repository.name }} ${{ needs.meta.outputs.bin_version }} available
           details: ${{ github.event.repository.name }} version ${{ needs.meta.outputs.bin_version }} is now available.
       - name: Send failure notification
-        uses: niniyas/ntfy-action@master
+        uses: niniyas/ntfy-action@9c6dc60073292f562769f83df2ace9f64ab31c78
         if: ${{ contains(needs.*.result, 'failure') }}
         with:
           url: "https://ntfy.cdzombak.net"
