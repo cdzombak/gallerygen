@@ -306,7 +306,7 @@ jobs:
             -fsS -X PUT \
             -H 'Content-Type: application/json' \
             --data '{"ForceOverwrite": true}' \
-            "${{ secrets.APTLY_API }}/publish/${{ needs.meta.outputs.aptly_publish_prefix }}/${{ needs.meta.outputs.aptly_dist }}?_async=true"
+            "${{ secrets.APTLY_API }}/publish/${{ needs.meta.outputs.aptly_publish_prefix }}/${{ needs.meta.outputs.aptly_dist }}?_async=True"
 
   homebrew:
     name: Update Homebrew Tap
