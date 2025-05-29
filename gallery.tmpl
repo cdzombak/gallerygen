@@ -909,6 +909,14 @@
         }
       });
 
+      // Handle Escape key to clear search when input is focused
+      filterInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          resetSearch();
+        }
+      });
+
       // Handle initial hash navigation
       function handleInitialHash() {
         const hash = window.location.hash.substring(1);
