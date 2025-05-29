@@ -315,7 +315,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Release to ${{ needs.meta.outputs.brewtap_owner }}/${{ needs.meta.outputs.brewtap_name }} tap
-        uses: Justintime50/homebrew-releaser@8723315045b3b879065d4ce3e8ff143e6b958529
+        uses: Justintime50/homebrew-releaser@ae8677299789c63078cc7952583734336eced9e1
         with:
           homebrew_owner: ${{ needs.meta.outputs.brewtap_owner }}
           homebrew_tap: homebrew-${{ needs.meta.outputs.brewtap_name }}
