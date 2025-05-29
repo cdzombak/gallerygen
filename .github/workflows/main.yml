@@ -97,19 +97,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run MegaLinter
-        uses: oxsecurity/megalinter@v7
+      - name: Super-linter
+        uses: super-linter/super-linter/slim@v7.4.0
         env:
-          # See https://megalinter.io/configuration and .mega-linter.yml
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Archive MegaLinter artifacts
-        if: ( !env.ACT && ( success() || failure() ) )
-        uses: actions/upload-artifact@v3
-        with:
-          name: MegaLinter artifacts
-          path: |
-            megalinter-reports
-            mega-linter.log
 
   docker:
     name: Docker Images
