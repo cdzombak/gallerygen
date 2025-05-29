@@ -5,6 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="gallerygen {{.Version}} - https://github.com/cdzombak/gallerygen">
   <title>{{if .RelativePath}}{{.RelativePath}} - {{end}}{{.Title}}</title>
+  <script type="module" src="./blurhash.js"></script>
+  <script type="module">
+    import { decode } from './blurhash.js';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Decode all blurhashes
+      const previews = document.querySelectorAll('.preview');
+
+      previews.forEach(preview => {
+        const hash = preview.getAttribute('data-blurhash');
+
+        if (hash) {
+          try {
+            const pixels = decode(hash, 32, 32);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(32, 32);
+            imageData.data.set(pixels);
+            ctx.putImageData(imageData, 0, 0);
+            preview.appendChild(canvas);
+          } catch (error) {
+            console.error('Error decoding blurhash:', error);
+          }
+        }
+
+        // Handle image loading
+        const img = preview.querySelector('img');
+        if (img) {
+          if (img.complete) {
+            img.classList.add('visible');
+          } else {
+            img.addEventListener('load', function() {
+              this.classList.add('visible');
+            });
+
+            img.addEventListener('error', function() {
+              console.error('Error loading image:', this.src);
+            });
+          }
+        }
+      });
+    });
+  </script>
   <style>
     html {
       scroll-timeline: --page-scroll block;
@@ -84,6 +130,40 @@
       max-width: 100%;
       height: auto;
       aspect-ratio: attr(width) / attr(height);
+    }
+    .item .preview {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 100%; /* This will be overridden by inline style */
+      background-size: cover;
+      background-position: center;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .item .preview canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    .item img.loaded {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .item img.loaded.visible {
+      opacity: 1;
     }
     .item .filename {
       text-align: center;
@@ -637,7 +717,9 @@
       {{range $file := $group.Files}}
       <div class="item">
         <a href="{{$file}}" target="_blank">
-          <img src="{{$file}}" alt="{{$file}}" width="{{(index $group.Metadata $file).Width}}" height="{{(index $group.Metadata $file).Height}}" loading="lazy">
+          <div class="preview" data-blurhash="{{(index $group.Metadata $file).Blurhash}}" style="padding-bottom: {{mul (div (float64 (index $group.Metadata $file).Height) (float64 (index $group.Metadata $file).Width)) 100}}%">
+            <img src="{{$file}}" alt="{{$file}}" width="{{(index $group.Metadata $file).Width}}" height="{{(index $group.Metadata $file).Height}}" loading="lazy" class="loaded" onload="this.classList.add('visible')">
+          </div>
           <div class="filename">{{$file}}</div>
         </a>
       </div>
@@ -858,7 +940,6 @@
           // Convert stored array back to Map
           const parsedIndex = JSON.parse(storedIndex);
           searchIndex = new Map(Object.entries(parsedIndex));
-          console.log('Loaded search index from cache');
         } catch (e) {
           console.warn('Failed to parse cached search index, regenerating');
           searchIndex = new Map();

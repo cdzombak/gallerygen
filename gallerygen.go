@@ -10,6 +10,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -19,11 +20,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/buckket/go-blurhash"
 	"github.com/fsnotify/fsnotify"
 )
 
 //go:embed gallery.tmpl
 var templateFS embed.FS
+
+//go:embed blurhash.js
+var blurhashJS []byte
 
 // Version is the current version of the program.
 var Version = "<dev>"
@@ -37,8 +42,9 @@ var imageExtensions = map[string]bool{
 
 // ImageMetadata contains information about an image file
 type ImageMetadata struct {
-	Width  int `json:"width"`
-	Height int `json:"height"`
+	Width    int    `json:"width"`
+	Height   int    `json:"height"`
+	Blurhash string `json:"blurhash,omitempty"`
 }
 
 // ImageGroup represents a group of images that start with the same letter.
@@ -64,34 +70,53 @@ func isHiddenOrTemp(filename string) bool {
 	return strings.HasPrefix(base, ".") || strings.HasSuffix(base, ".tmp") || strings.HasSuffix(base, ".temp")
 }
 
-// getImageMetadata returns the dimensions of an image file, using cache if available
+// getImageMetadata returns the dimensions and blurhash of an image file, using cache if available
 func getImageMetadata(imagePath string) (ImageMetadata, error) {
 	// Check for cache file
 	baseName := filepath.Base(imagePath)
 	dirName := filepath.Dir(imagePath)
 	cachePath := filepath.Join(dirName, "."+baseName+".gallerygen.json")
+
+	// Try to read existing metadata
+	var metadata ImageMetadata
 	if cacheData, err := os.ReadFile(cachePath); err == nil {
-		var metadata ImageMetadata
 		if err := json.Unmarshal(cacheData, &metadata); err == nil {
-			return metadata, nil
+			// If we have valid metadata with a blurhash, return it
+			if metadata.Blurhash != "" {
+				return metadata, nil
+			}
+			// Otherwise, we'll regenerate the metadata below
+			log.Printf("Regenerating metadata for %s (missing blurhash)", imagePath)
 		}
 	}
 
-	// If no cache or invalid cache, read the image
+	// If no cache, invalid cache, or missing blurhash, read the image
 	file, err := os.Open(imagePath)
 	if err != nil {
 		return ImageMetadata{}, fmt.Errorf("error opening image file: %v", err)
 	}
 	defer file.Close()
 
-	img, _, err := image.DecodeConfig(file)
+	img, _, err := image.Decode(file)
 	if err != nil {
 		return ImageMetadata{}, fmt.Errorf("error decoding image: %v", err)
 	}
 
-	metadata := ImageMetadata{
-		Width:  img.Width,
-		Height: img.Height,
+	// Get image dimensions
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	// Generate blurhash
+	hash, err := blurhash.Encode(4, 3, img)
+	if err != nil {
+		return ImageMetadata{}, fmt.Errorf("error generating blurhash: %v", err)
+	}
+
+	metadata = ImageMetadata{
+		Width:    width,
+		Height:   height,
+		Blurhash: hash,
 	}
 
 	// Cache the metadata
@@ -208,6 +233,12 @@ func generateHTML(dir Directory, tmpl *template.Template) error {
 		return fmt.Errorf("error writing HTML to %s: %v", outputPath, err)
 	}
 
+	// Copy blurhash.js to the output directory
+	blurhashPath := filepath.Join(dir.Path, "blurhash.js")
+	if err := os.WriteFile(blurhashPath, []byte(blurhashJS), 0644); err != nil {
+		log.Printf("Warning: Could not write blurhash.js: %v", err)
+	}
+
 	log.Printf("Generated index.html in directory: %s", dir.Path)
 
 	// Recursively generate index.html for all subdirectories
@@ -219,6 +250,27 @@ func generateHTML(dir Directory, tmpl *template.Template) error {
 	}
 
 	return nil
+}
+
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, sourceFile)
+	if err != nil {
+		return err
+	}
+
+	return destFile.Sync()
 }
 
 func watchDirectory(dirPath string, tmpl *template.Template, title string) error {
@@ -331,6 +383,15 @@ func main() {
 		},
 		"sub": func(a, b int) int {
 			return a - b
+		},
+		"mul": func(a, b float64) float64 {
+			return a * b
+		},
+		"div": func(a, b float64) float64 {
+			return a / b
+		},
+		"float64": func(n int) float64 {
+			return float64(n)
 		},
 		"until": func(n int) []int {
 			var result []int
