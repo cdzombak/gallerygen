@@ -270,7 +270,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download binaries & packages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ needs.meta.outputs.bin_name }} Binary Artifacts
           path: out
@@ -279,7 +279,7 @@ jobs:
         working-directory: out
 
       - name: Login to Tailscale
-        uses: tailscale/github-action@v2
+        uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
@@ -315,7 +315,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Release to ${{ needs.meta.outputs.brewtap_owner }}/${{ needs.meta.outputs.brewtap_name }} tap
-        uses: Justintime50/homebrew-releaser@v1
+        uses: Justintime50/homebrew-releaser@ae8677299789c63078cc7952583734336eced9e1
         with:
           homebrew_owner: ${{ needs.meta.outputs.brewtap_owner }}
           homebrew_tap: homebrew-${{ needs.meta.outputs.brewtap_name }}
@@ -328,7 +328,7 @@ jobs:
           target_darwin_arm64: true
           target_linux_amd64: true
           target_linux_arm64: true
-          version: ${{ needs.meta.outputs.bin_version }}
+          version: v${{ needs.meta.outputs.bin_version }}
           install: 'bin.install "${{ needs.meta.outputs.bin_name }}"'
           test: 'assert_match("${{ needs.meta.outputs.bin_version }}", shell_output("#{bin}/${{ needs.meta.outputs.bin_name }} -version"))'
 
