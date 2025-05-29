@@ -1001,7 +1001,15 @@
       }
 
       // Update active letter when scrolling ends
-      window.addEventListener('scrollend', updateActiveLetter);
+      let scrollTimeout;
+      window.addEventListener('scroll', function() {
+        // Clear the previous timeout
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout);
+        }
+        // Set a new timeout
+        scrollTimeout = setTimeout(updateActiveLetter, 100);
+      });
 
       // Initial update
       updateActiveLetter();
