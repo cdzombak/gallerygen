@@ -104,7 +104,7 @@ jobs:
 
   docker:
     name: Docker Images
-    needs: [lint, meta]
+    needs: [meta]
     if: needs.meta.outputs.is_running_version_tag_update != 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -180,7 +180,7 @@ jobs:
 
   binaries:
     name: Binaries & Debian Packages
-    needs: [lint, meta]
+    needs: [meta]
     if: needs.meta.outputs.is_running_version_tag_update != 'true'
     runs-on: ubuntu-latest
 
@@ -336,7 +336,7 @@ jobs:
     name: Ntfy
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
-    needs: [meta, lint, docker, binaries, release, aptly, homebrew]
+    needs: [meta, docker, binaries, release, aptly, homebrew]
     steps:
       - name: Send success notification
         uses: niniyas/ntfy-action@master
