@@ -20,6 +20,7 @@ import (
 //go:embed gallery.tmpl
 var templateFS embed.FS
 
+// Version is the current version of the program.
 var Version = "<dev>"
 
 var imageExtensions = map[string]bool{
@@ -29,11 +30,13 @@ var imageExtensions = map[string]bool{
 	".png":  true,
 }
 
+// ImageGroup represents a group of images that start with the same letter.
 type ImageGroup struct {
 	Letter string
 	Files  []string
 }
 
+// Directory represents a directory in the gallery, containing subdirectories and image groups.
 type Directory struct {
 	Path         string
 	Subdirs      []Directory
