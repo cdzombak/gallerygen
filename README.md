@@ -1,8 +1,8 @@
-# gallerygen
+![gallerygen banner](img/gallerygen-banner.png)
 
-Generate a static HTML gallery from a directory of images.
+**gallerygen** generates a static HTML gallery from a directory of images.
 
-**Preview:** [dropbox.dzombak.com/gifs](https://dropbox.dzombak.com/gifs)
+*Preview:* [dropbox.dzombak.com/gifs](https://dropbox.dzombak.com/gifs)
 
 ## Usage
 
