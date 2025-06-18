@@ -1,0 +1,21 @@
+# https://megalinter.io/configuration/
+
+---
+APPLY_FIXES: all
+
+DISABLE:
+  - REPOSITORY
+  - SPELL
+DISABLE_LINTERS:
+  - MAKEFILE_CHECKMAKE
+PLUGINS:
+  - https://raw.githubusercontent.com/cdzombak/mega-linter-plugin-dockerfilelint/main/mega-linter-plugin-dockerfilelint/dockerfilelint.megalinter-descriptor.yml
+
+GO_REVIVE_CONFIG_FILE: ".revive.toml"
+JAVASCRIPT_STANDARD_FILTER_REGEX_EXCLUDE: "blurhash\\.js"
+MARKDOWN_MARKDOWNLINT_ARGUMENTS: "--disable MD013"
+
+VALIDATE_ALL_CODEBASE: true
+SHOW_ELAPSED_TIME: false
+FILEIO_REPORTER: false
+PRINT_ALPACA: false

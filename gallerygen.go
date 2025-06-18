@@ -10,7 +10,6 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -250,27 +249,6 @@ func generateHTML(dir Directory, tmpl *template.Template) error {
 	}
 
 	return nil
-}
-
-func copyFile(src, dst string) error {
-	sourceFile, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer sourceFile.Close()
-
-	destFile, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer destFile.Close()
-
-	_, err = io.Copy(destFile, sourceFile)
-	if err != nil {
-		return err
-	}
-
-	return destFile.Sync()
 }
 
 func watchDirectory(dirPath string, tmpl *template.Template, title string) error {

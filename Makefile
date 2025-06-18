@@ -58,11 +58,3 @@ lint: ## Lint all source files in this repository (requires nektos/act: https://
 .PHONY: update-lint
 update-lint: ## Pull updated images supporting the lint target (may fetch >10 GB!)
 	docker pull catthehacker/ubuntu:full-latest
-
-GOLINT_FILES:=$(shell find . -name '*.go' | grep -v /vendor/)
-.PHONY: golint
-golint: ## Lint all .go files with golint
-	@for file in ${GOLINT_FILES} ;  do \
-		echo "$$file" ; \
-		golint $$file ; \
-	done
