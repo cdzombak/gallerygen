@@ -2,7 +2,6 @@
 
 ---
 APPLY_FIXES: all
-APPLY_FIXES_MODE: commit
 
 DISABLE:
   - REPOSITORY
