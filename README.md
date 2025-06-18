@@ -1,3 +1,5 @@
+# gallerygen
+
 ![gallerygen banner](img/gallerygen-banner.png)
 
 **gallerygen** generates a static HTML gallery from a directory of images.
