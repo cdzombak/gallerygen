@@ -13,6 +13,7 @@ PLUGINS:
   - https://raw.githubusercontent.com/cdzombak/mega-linter-plugin-dockerfilelint/main/mega-linter-plugin-dockerfilelint/dockerfilelint.megalinter-descriptor.yml
 
 GO_REVIVE_CONFIG_FILE: ".revive.toml"
+JAVASCRIPT_STANDARD_FILTER_REGEX_EXCLUDE: "blurhash\\.js"
 MARKDOWN_MARKDOWNLINT_ARGUMENTS: "--disable MD013"
 
 VALIDATE_ALL_CODEBASE: true
