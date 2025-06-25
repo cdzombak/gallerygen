@@ -295,7 +295,7 @@ func watchDirectory(dirPath string, tmpl *template.Template, title string) error
 		select {
 		case event := <-watcher.Events:
 			// Ignore events for index.html files and hidden/temp files
-			if filepath.Base(event.Name) == "index.html" || isHiddenOrTemp(event.Name) {
+			if filepath.Base(event.Name) == "index.html" || filepath.Base(event.Name) == "blurhash.js" || isHiddenOrTemp(event.Name) {
 				continue
 			}
 
