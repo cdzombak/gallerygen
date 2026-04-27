@@ -178,7 +178,6 @@ func processDirectory(dirPath string, basePath string, title string) (Directory,
 		}
 
 		first := strings.ToUpper(string(entry.Name()[0]))
-		groups[first] = append(groups[first], entry.Name())
 
 		// Get image metadata
 		imgPath := filepath.Join(dirPath, entry.Name())
@@ -187,6 +186,8 @@ func processDirectory(dirPath string, basePath string, title string) (Directory,
 			log.Printf("Warning: Could not get metadata for %s: %v", imgPath, err)
 			continue
 		}
+
+		groups[first] = append(groups[first], entry.Name())
 
 		if metadata[first] == nil {
 			metadata[first] = make(map[string]ImageMetadata)
