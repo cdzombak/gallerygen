@@ -6,7 +6,7 @@ ARG BIN_NAME
 ARG BIN_VERSION
 WORKDIR /src/gallerygen
 COPY . .
-RUN go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME} .
+RUN go build -ldflags="-X main.Version=${BIN_VERSION}" -o ./out/${BIN_NAME} .
 
 FROM scratch
 ARG BIN_NAME
